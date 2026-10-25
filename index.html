@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Carnivore Did It! — Sospettati</title>
+<style>
+:root{--ink:#211c1a;--paper:#f5f0e7;--accent:#9f4939;--route:#9f4939}
+@font-face{font-family:CardHand;src:url("fonts/ComicNeue-Bold.otf") format("opentype");font-weight:700;font-style:normal}
+*{box-sizing:border-box}
+body{margin:0;background:#e9e4da;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+header{padding:7px 16px 3px;text-align:center}
+h1{font-family:Impact,'Arial Narrow',sans-serif;text-transform:uppercase;letter-spacing:.06em;font-size:clamp(1.25rem,2.5vw,2rem);margin:0}
+.controls{max-width:1200px;margin:5px auto;padding:5px 10px;background:white;border:1px solid #d5cec2;border-radius:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.count-group{display:flex;flex-direction:column;align-items:flex-start;gap:4px}.count-line,.icon-line{display:flex;align-items:center;gap:7px}.icon-line{padding-left:2px}.icon-line .setting{padding:2px 6px}
+.controls label{font-weight:700}
+.control-symbol{display:inline-flex;align-items:center;justify-content:center;min-width:24px;font-size:23px;line-height:1}
+#liarToggle{border:0;background:transparent;padding:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:28px;height:30px;border-radius:6px;font-size:25px;font-weight:900;line-height:1;font-family:Arial,sans-serif;color:#c62828}
+#liarToggle:focus-visible,#timerButton:focus-visible{outline:3px solid #4977c8;outline-offset:2px}
+#timer{margin-left:auto;display:flex;align-items:center;gap:8px;padding:4px 8px;background:#f7f4ef;border:1px solid #e1d9ce;border-radius:8px;font-variant-numeric:tabular-nums}
+#timerDisplay{font:700 clamp(1.2rem,2vw,1.7rem)/1 Arial,sans-serif;min-width:78px;text-align:center}
+#timerButton{border:0;border-radius:7px;background:#9f4939;color:white;font-weight:700;padding:8px 12px;cursor:pointer;min-height:34px}
+#timerButton:hover{background:#80392d}
+#liarRange{width:110px;text-align:center;font-weight:700}
+#culpritCount{min-width:58px}
+.controls .setting{display:flex;align-items:center;gap:6px;background:#f7f4ef;border-radius:7px;padding:4px 7px}
+select,.card-number{font:inherit;border:2px solid #b8b0a5;border-radius:7px;padding:6px 8px;background:#fff;min-height:34px}
+#inputs{display:flex;gap:7px;flex-wrap:wrap;flex:1}
+.input-item{display:flex;align-items:center;gap:5px;background:#f7f4ef;padding:4px 6px;border-radius:7px}
+.input-item label{font-size:.82rem;white-space:nowrap}
+.card-number{width:64px}
+.board-wrap{padding:0 8px 8px;max-width:1600px;margin:auto}
+#board{position:relative;width:100%;height:calc(100vh - 155px);min-height:0;max-height:1000px;background:var(--paper);border:2px solid #d4c9b9;border-radius:10px;overflow:hidden;box-shadow:0 5px 18px #00000012;background-image:radial-gradient(#c7bba7 0.7px,transparent .7px);background-size:14px 14px;display:grid;gap:clamp(8px,1.2vw,18px);padding:clamp(12px,1.6vw,24px);}
+.pair{min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;gap:clamp(7px,1vw,16px);padding:3px;position:relative;z-index:1;}
+.portrait,.bubble{height:100%;max-height:100%;aspect-ratio:1191 / 1659;width:auto;flex:0 1 auto;min-width:0;}
+.portrait{object-fit:contain;filter:drop-shadow(0 2px 2px #0002);border:1px solid #d7d0c5;border-radius:4px;background:#fff;}
+.bubble{background:#fffdf7;border:1.7px solid #40352e;border-radius:3px;padding:9px;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:1px 2px 0 #00000012;font-family:CardHand,'Amatic SC','Comic Neue',cursive;font-weight:700;line-height:1.04;letter-spacing:.01em;white-space:normal;overflow:hidden;overflow-wrap:normal;word-break:normal;hyphens:none;}
+.bubble.empty{color:#8e867d;font-family:Arial,sans-serif;font-weight:500;border-style:dashed;font-size:12px;white-space:normal;line-height:1.25;padding:10px}
+.sequence{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;overflow:visible}.sequence path.route{fill:none;stroke:var(--route);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}.sequence path.loop{stroke-width:2.4}.sequence text{font:700 11px Arial,sans-serif;fill:var(--route);paint-order:stroke;stroke:var(--paper);stroke-width:4px;stroke-linejoin:round}.sequence .loop-label{font-size:12px;letter-spacing:.02em}
+footer{display:none}
+@media(max-width:700px){
+ header{padding:5px 8px 2px}.controls{margin:4px;padding:6px;gap:7px}.board-wrap{padding:0 4px 4px}
+ #board{height:calc(100vh - 205px);min-height:430px;padding:8px;gap:8px}
+ .pair{gap:8px;padding:2px}
+ .portrait,.bubble{height:100%}
+}
+@media print{body{background:white}.controls,header,footer{display:none}.board-wrap{padding:0;max-width:none}#board{height:95vh;border:0;box-shadow:none;border-radius:0;print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<header><h1>A carnivore did it</h1></header>
+<section class="controls" aria-label="Controlli">
+ <div class="count-group"><div class="count-line"><label for="count">Sospettati</label>
+ <select id="count"><option>3</option><option>4</option><option>5</option><option>6</option><option selected>7</option></select></div>
+ <div class="icon-line"><div class="setting" title="Numero di colpevoli"><span class="control-symbol" aria-hidden="true">🎯</span><select id="culpritCount" aria-label="Numero di colpevoli"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+ <div class="setting" title="Numero di bugiardi"><button id="liarToggle" type="button" aria-label="Alterna X rossa e segno di spunta verde" aria-pressed="false">✕</button><input id="liarRange" type="text" inputmode="numeric" aria-label="Numero di bugiardi: un numero o un intervallo" pattern="[0-9]+(-[0-9]+)?"></div></div></div>
+ <div id="inputs"></div>
+ <div id="timer" aria-label="Timer"><span id="timerDisplay" role="timer" aria-live="off">00:00</span><button id="timerButton" type="button">Avvia</button></div>
+</section>
+<div class="board-wrap"><main id="board" aria-label="Tavola dei sospettati"></main></div>
+
+<script>
+const cards = [{"id": 1, "text": "Sono stato IO"}, {"id": 2, "text": "Non sono stato IO"}, {"id": 3, "text": "È stata PANTERA"}, {"id": 4, "text": "È stato SQUALO"}, {"id": 5, "text": "È stato CANE"}, {"id": 6, "text": "È stato ORSO"}, {"id": 7, "text": "Non è stata PAVONE"}, {"id": 8, "text": "Non è stato IGUANA"}, {"id": 9, "text": "Non è stato CAVALLO"}, {"id": 10, "text": "PAVONE sta mentendo"}, {"id": 11, "text": "SQUALO sta mentendo"}, {"id": 12, "text": "CANE sta mentendo"}, {"id": 13, "text": "CAVALLO sta mentendo"}, {"id": 14, "text": "PANTERA e PAVONE stanno mentendo"}, {"id": 15, "text": "SQUALO e IGUANA stanno mentendo"}, {"id": 16, "text": "CAVALLO e ORSO stanno mentendo"}, {"id": 17, "text": "Non sono stati né PAVONE né SQUALO"}, {"id": 18, "text": "Non sono stati né IGUANA né CANE"}, {"id": 19, "text": "È stata PANTERA o PAVONE (o entrambe)"}, {"id": 20, "text": "È stata PAVONE o SQUALO (o entrambi)"}, {"id": 21, "text": "È stato CAVALLO o ORSO (o entrambi)"}, {"id": 22, "text": "SQUALO e IGUANA stanno dicendo la verità"}, {"id": 23, "text": "CANE e CAVALLO stanno dicendo la verità"}, {"id": 24, "text": "Non siamo stati né IO né PAVONE"}, {"id": 25, "text": "Non siamo stati né IO né CANE"}, {"id": 26, "text": "Siamo stati IO oppure PANTERA (o entrambi)"}, {"id": 27, "text": "Siamo stati IO oppure CAVALLO (o entrambi)"}, {"id": 28, "text": "È stato qualcuno più alto di me"}, {"id": 29, "text": "È stato qualcuno più basso di me"}, {"id": 30, "text": "È stato qualcuno più alto di 175 cm"}, {"id": 31, "text": "È stato qualcuno più alto di 190 cm"}, {"id": 32, "text": "È stato qualcuno più basso 170 cm"}, {"id": 33, "text": "È stato qualcuno più basso di 180 cm"}, {"id": 34, "text": "È stato un CARNIVORO"}, {"id": 35, "text": "È stato un ERBIVORO"}, {"id": 36, "text": "È stato un sospettato accanto a me"}, {"id": 37, "text": "Non sono stati i sospettati accanto a me"}, {"id": 38, "text": "Un colpevole sta mentendo"}, {"id": 39, "text": "Un colpevole sta dicendo la verità"}, {"id": 40, "text": "Un colpevole si trova tra due sospettati che mentono"}, {"id": 41, "text": "Due bugiardi sono l'uno accanto all'altro"}, {"id": 42, "text": "Il bugiardo più alto è un colpevole"}, {"id": 43, "text": "Due colpevoli stanno mentendo"}, {"id": 44, "text": "Un colpevole si trova tra due sospettati innocenti"}, {"id": 45, "text": "Due colpevoli si trovano l'uno accanto all'altro"}, {"id": 46, "text": "Due colpevoli hanno una dieta diversa"}, {"id": 47, "text": "Almeno uno dei colpevoli sta mentendo e almeno uno sta dicendo la verità"}, {"id": 48, "text": "Tre sospettati adiacenti sono innocenti"}, {"id": 49, "text": "Il colpevole più basso sta dicendo la verità"}, {"id": 50, "text": "Due colpevoli hanno una differenza di altezza di 10 cm o meno"}];
+const countSelect=document.getElementById('count'), inputs=document.getElementById('inputs'), board=document.getElementById('board');
+const values=[null,null,null,null,null,null,null];
+const nodes=[];
+function buildInputs(){
+ const n=+countSelect.value; inputs.innerHTML='';
+ for(let i=1;i<=n;i++){
+  const wrap=document.createElement('div');wrap.className='input-item';
+  const label=document.createElement('label');label.htmlFor='card'+i;label.textContent=i+':';
+  const input=document.createElement('input');input.className='card-number';input.type='number';input.min=1;input.max=50;input.step=1;input.id='card'+i;input.value=values[i-1]??''; input.placeholder='1–50';input.setAttribute('aria-label','Numero carta del sospettato '+i);
+  input.addEventListener('input',()=>{values[i-1]=input.value===''?null:Math.max(1,Math.min(50,Number(input.value)));render();});
+  wrap.append(label,input);inputs.append(wrap);
+ }
+ render();
+}
+function fitBubbleText(bubble){
+ // Parti grande e riduci solo finché tutto il testo rientra davvero nel box.
+ // Il browser manda a capo tra parole, ma non spezza le parole a metà.
+ if(bubble.classList.contains('empty')) return;
+ let size=Math.min(58, bubble.clientHeight*0.34, bubble.clientWidth*0.72);
+ size=Math.max(10,size);
+ bubble.style.fontSize=size+'px';
+ while(size>10 && (bubble.scrollHeight> bubble.clientHeight+1 || bubble.scrollWidth> bubble.clientWidth+1)){
+   size-=0.5;
+   bubble.style.fontSize=size+'px';
+ }
+}
+function layoutFor(n, W, H, mobile){
+ // Griglia adattiva: più spazio per pochi sospettati, sempre nello stesso ordine 1, 2, 3...
+ if(mobile){
+   const cols=n<=3?1:2;
+   return {cols,rows:Math.ceil(n/cols)};
+ }
+ if(n<=3) return {cols:3,rows:1};
+ if(n===4) return {cols:2,rows:2};
+ if(n<=6) return {cols:3,rows:2};
+ return {cols:4,rows:2};
+}
+function render(){
+ const n=+countSelect.value;
+ board.innerHTML='';
+ const rect=board.getBoundingClientRect(), W=rect.width, H=rect.height;
+ const mobile=innerWidth<=700;
+ const layout=layoutFor(n,W,H,mobile);
+ board.style.gridTemplateColumns=`repeat(${layout.cols},minmax(0,1fr))`;
+ board.style.gridTemplateRows=`repeat(${layout.rows},minmax(0,1fr))`;
+ const pairs=[];
+ for(let i=0;i<n;i++){
+  const pair=document.createElement('section');pair.className='pair';pair.setAttribute('aria-label','Sospettato '+(i+1)+' e relativa carta');
+  // Ordine a serpentina: il percorso resta contiguo anche quando passa alla riga successiva.
+  const row=Math.floor(i/layout.cols), col=i%layout.cols;
+  const visualCol=(row%2===1)?layout.cols-1-col:col;
+  pair.style.gridColumn=String(visualCol+1);pair.style.gridRow=String(row+1);
+  const img=document.createElement('img');img.className='portrait';img.src='suspects/suspect'+(i+1)+'.jpg';img.alt='Sospettato '+(i+1);
+  const num=values[i];
+  const text=num?((cards.find(c=>c.id===Number(num))||{}).text||'Carta non trovata'):'Inserisci un numero da 1 a 50';
+  const bubble=document.createElement('div');bubble.className='bubble'+(!num?' empty':'');bubble.textContent=text;
+  pair.append(img,bubble);board.append(pair);pairs.push(pair);
+ }
+ const innerW=board.clientWidth, innerH=board.clientHeight;
+ const style=getComputedStyle(board);
+ const padX=parseFloat(style.paddingLeft)+parseFloat(style.paddingRight);
+ const padY=parseFloat(style.paddingTop)+parseFloat(style.paddingBottom);
+ const gapX=parseFloat(style.columnGap)||0, gapY=parseFloat(style.rowGap)||0;
+ const cellW=(innerW-padX-gapX*(layout.cols-1))/layout.cols;
+ const cellH=(innerH-padY-gapY*(layout.rows-1))/layout.rows;
+ const ratio=1191/1659;
+ const pairGap=mobile?8:Math.max(8,Math.min(16,W*.01));
+ const routeReserve=(n===3 && !mobile)?24:8;
+ const cardH=Math.max(42,Math.min(cellH-routeReserve-8,(cellW-20-pairGap)/(2*ratio))); 
+ for(let i=0;i<n;i++){
+  const pair=pairs[i], img=pair.querySelector('img'), bubble=pair.querySelector('.bubble');
+  img.style.height=cardH+'px';img.style.width=(cardH*ratio)+'px';img.style.flex='0 0 '+(cardH*ratio)+'px';
+  bubble.style.height=cardH+'px';bubble.style.width=(cardH*ratio)+'px';bubble.style.flex='0 0 '+(cardH*ratio)+'px';
+  const num=values[i];
+  bubble.style.fontSize=num?'30px':'12px';
+  pair.style.gap=pairGap+'px';
+  fitBubbleText(bubble);
+ }
+ drawSequence(pairs,n,W,H,layout,mobile);
+}
+function drawSequence(pairs,n,W,H,layout,mobile){
+ const ns='http://www.w3.org/2000/svg';
+ const svg=document.createElementNS(ns,'svg');svg.setAttribute('class','sequence');svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.setAttribute('aria-label','Percorso circolare: 1, 2, fino all’ultimo e ritorno a 1');
+ const defs=document.createElementNS(ns,'defs');
+ const marker=document.createElementNS(ns,'marker');marker.setAttribute('id','arrowhead');marker.setAttribute('markerWidth','12');marker.setAttribute('markerHeight','12');marker.setAttribute('refX','9');marker.setAttribute('refY','6');marker.setAttribute('orient','auto');marker.setAttribute('markerUnits','userSpaceOnUse');
+ const tip=document.createElementNS(ns,'path');tip.setAttribute('d','M0,0 L11,6 L0,12 Z');tip.setAttribute('fill','#9f4939');tip.setAttribute('stroke','#9f4939');tip.setAttribute('stroke-width','1');marker.append(tip);defs.append(marker);svg.append(defs);
+ const boardRect=board.getBoundingClientRect();
+ const boxes=pairs.map(p=>{const r=p.getBoundingClientRect();return{x:r.left-boardRect.left,y:r.top-boardRect.top,w:r.width,h:r.height,cx:r.left-boardRect.left+r.width/2,cy:r.top-boardRect.top+r.height/2};});
+ function addPath(d,loop=false){const p=document.createElementNS(ns,'path');p.setAttribute('d',d);p.setAttribute('class',loop?'route loop':'route');p.setAttribute('stroke-width',n<=3?'4.2':n<=5?'3.8':'3.5');p.setAttribute('marker-end','url(#arrowhead)');svg.append(p);}
+ // Percorso sequenziale: frecce brevi nei corridoi, mai sopra le carte.
+ for(let i=0;i<n-1;i++){
+  const a=boxes[i],b=boxes[i+1];
+  const ar=Math.floor(i/layout.cols),br=Math.floor((i+1)/layout.cols);
+  if(ar===br){
+   const dir=b.cx>a.cx?1:-1;
+   const sx=a.cx+dir*(a.w/2+1), ex=b.cx-dir*(b.w/2+1), y=(a.cy+b.cy)/2;
+   if(Math.abs(ex-sx)>12) addPath(`M ${sx} ${y} L ${ex} ${y}`);
+  }else{
+   // Passaggio tra righe: curva ad angolo arrotondato nel corridoio verticale/laterale.
+   const sx=a.cx, sy=a.cy+(b.cy>a.cy?1:-1)*(a.h/2+1);
+   const ex=b.cx, ey=b.cy-(b.cy>a.cy?1:-1)*(b.h/2+1);
+   const midY=(sy+ey)/2;
+   addPath(`M ${sx} ${sy} C ${sx} ${midY} ${ex} ${midY} ${ex} ${ey}`);
+  }
+ }
+ // Ritorno all'inizio: geometria dedicata per ciascun tipo di griglia.
+ const first=boxes[0],last=boxes[n-1];
+ if(layout.rows===1){
+  // In tre: arco ampio nel margine superiore, così non sfiora le carte.
+  const sx=last.cx, ex=first.cx, y=Math.max(8,Math.min(first.y,last.y)-12);
+  addPath(`M ${sx} ${last.y+2} C ${sx} ${y} ${ex} ${y} ${ex} ${first.y+2}`,true);
+ }else if(n===4){
+  // In quattro: ritorno dal quarto al primo nel corridoio sinistro, con angoli morbidi.
+  const sx=last.x, sy=last.cy, ex=first.x, ey=first.cy;
+  const laneX=Math.max(8,Math.min(first.x,last.x)-8);
+  addPath(`M ${sx} ${sy} C ${laneX} ${sy} ${laneX} ${sy-8} ${laneX} ${sy-16} L ${laneX} ${ey+16} C ${laneX} ${ey+8} ${laneX} ${ey} ${ex} ${ey}`,true);
+ }else{
+  // In cinque-sette: corsia esterna sinistra, ampia abbastanza per distinguersi dalle frecce interne.
+  const sx=last.x, sy=last.cy, ex=first.x, ey=first.cy;
+  const laneX=Math.max(8,Math.min(first.x,last.x)-10);
+  const r=Math.min(22,Math.max(12,Math.abs(ey-sy)*.08));
+  addPath(`M ${sx} ${sy} C ${laneX} ${sy} ${laneX} ${sy-r} ${laneX} ${sy-r*2} L ${laneX} ${ey+r*2} C ${laneX} ${ey+r} ${laneX} ${ey} ${ex} ${ey}`,true);
+ }
+ board.append(svg);
+}
+const liarToggle=document.getElementById('liarToggle');
+liarToggle.addEventListener('click',()=>{
+  const checked=liarToggle.getAttribute('aria-pressed')!=='true';
+  liarToggle.setAttribute('aria-pressed',String(checked));
+  liarToggle.textContent=checked?'✓':'✕';
+  liarToggle.style.color=checked?'#218838':'#c62828';
+  liarToggle.setAttribute('aria-label',checked?'Segno di spunta verde attivo; clicca per tornare alla X rossa':'X rossa attiva; clicca per passare al segno di spunta verde');
+});
+
+const timerDisplay=document.getElementById('timerDisplay');
+const timerButton=document.getElementById('timerButton');
+let timerSeconds=0;
+let timerInterval=null;
+function showTimer(){
+  const minutes=String(Math.floor(timerSeconds/60)).padStart(2,'0');
+  const seconds=String(timerSeconds%60).padStart(2,'0');
+  timerDisplay.textContent=minutes+':'+seconds;
+}
+timerButton.addEventListener('click',()=>{
+  if(timerInterval!==null){
+    clearInterval(timerInterval);
+    timerInterval=null;
+    timerButton.textContent='Riparti';
+    return;
+  }
+  timerSeconds=0;
+  showTimer();
+  timerButton.textContent='Ferma';
+  timerInterval=setInterval(()=>{
+    timerSeconds++;
+    showTimer();
+  },1000);
+});
+document.getElementById('liarRange').addEventListener('input',e=>{ e.target.value=e.target.value.replace(/[^0-9-]/g,'').replace(/-{2,}/g,'-').replace(/^(.*?)-.*?-/,'$1-'); });
+countSelect.addEventListener('change',buildInputs);
+window.addEventListener('resize',render);
+buildInputs();
+</script>
+</body></html>

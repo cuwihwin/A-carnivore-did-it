@@ -1,0 +1,6 @@
+A Carnivore Did It — tool locale
+
+Apri index.html nel browser. Mantieni insieme index.html, la cartella suspects e la cartella fonts.
+
+Scegli il numero di sospettati, inserisci per ciascuno il numero della carta (da 1 a 50), imposta l'icona dei colpevoli e inserisci il numero o l'intervallo dei bugiardi.
+Il tool funziona localmente e non richiede installazione.
